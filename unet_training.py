@@ -73,150 +73,150 @@ def return_shuffled_im(train_size, test_size, input_seq):
 
 """## Training Model"""
 
-# #generate how many models.
-# models_to_gen = 5
+#generate how many models.
+models_to_gen = 5
 
-# for i in range(models_to_gen):
+for i in range(models_to_gen):
 
-#     file_path = 'dataset02/' # Dataset to use.
-#     data_store = {}
-#     data_store['input'] = []
-#     data_store['gt'] = []
-#     data_store['dense'] = []
+    file_path = 'dataset02/' # Dataset to use.
+    data_store = {}
+    data_store['input'] = []
+    data_store['gt'] = []
+    data_store['dense'] = []
 
-#     #Parameters of fit.
-#     in_hei = 96 #Size of each image patch
-#     in_wid = 96 #Size of each image patch
-#     mag = 16 #The padding margin to use
-#     train_size = 72 #The number of training images.
-#     test_size = 8 #The number of test images.
-#     learning_rate = "1e-5 see learning rate decay"
-#     batch_size = 16 #For stochastic gradient descent, the number of images in each batch.
-#     nb_epoch = 50 #The number of epochs
-#     samples_per_epoch = 60 #For stochastic gradient descent, the number of batches per epoch.
-#     image_pool_size = train_size+test_size
-#     input_seq = np.arange(0,image_pool_size)
-#     sigma = 2.0 #Size of kernel representing the ground-truth density.
-#     save_best_only = False
-#     loss = 'mse' # I use mean square error in this case.
+    #Parameters of fit.
+    in_hei = 96 #Size of each image patch
+    in_wid = 96 #Size of each image patch
+    mag = 16 #The padding margin to use
+    train_size = 72 #The number of training images.
+    test_size = 8 #The number of test images.
+    learning_rate = "1e-5 see learning rate decay"
+    batch_size = 16 #For stochastic gradient descent, the number of images in each batch.
+    nb_epoch = 50 #The number of epochs
+    samples_per_epoch = 60 #For stochastic gradient descent, the number of batches per epoch.
+    image_pool_size = train_size+test_size
+    input_seq = np.arange(0,image_pool_size)
+    sigma = 2.0 #Size of kernel representing the ground-truth density.
+    save_best_only = False
+    loss = 'mse' # I use mean square error in this case.
 
-#     decay = 0.0
-
-
-#     # Experiment number should match filename
-#     filepath = "saved_models/keras_tf_exp_sdataset02s2_model_" + str(i)
-
-#     for i in range(0,image_pool_size):
-#         n = str(i+1).zfill(3)
-
-#         #Open intensity image.
-#         img = Image.open(file_path + n + 'cells.png').getdata()
-#         wid, hei = img.size
-#         temp = np.array(img).reshape((hei,wid,3))[:,:,2].astype(np.float32)
-
-#         data_store['input'].append(temp)
-
-#         #Open ground-truth image.
-#         img =  Image.open(file_path + n + 'dots.png').getdata()
-#         data_store['gt'].append(np.array(img).reshape((hei,wid))[:,:].astype(np.float64))
-
-#         #Filter ground-truth image to produce density kernel representation
-#         data_store['dense'].append(ndimage.filters.gaussian_filter(data_store['gt'][i],sigma,mode='constant'))
+    decay = 0.0
 
 
-#     train = []
-#     gtdata = []
+    # Experiment number should match filename
+    filepath = "saved_models/keras_tf_exp_sdataset02s2_model_" + str(i)
 
-#     shuf_train_images, shuf_test_images = return_shuffled_im(train_size,test_size,input_seq)
+    for i in range(0,image_pool_size):
+        n = str(i+1).zfill(3)
 
-#     X_trainf = []
-#     Y_trainf = []
-#     X_testf = []
-#     Y_testf = []
+        #Open intensity image.
+        img = Image.open(file_path + n + 'cells.png').getdata()
+        wid, hei = img.size
+        temp = np.array(img).reshape((hei,wid,3))[:,:,2].astype(np.float32)
 
-#     for i in shuf_train_images:
-#         X_trainf.append(data_store['input'][i])
-#         Y_trainf.append(data_store['dense'][i])
-#     for i in shuf_test_images:
-#         X_testf.append(data_store['input'][i])
-#         Y_testf.append(data_store['dense'][i])
+        data_store['input'].append(temp)
 
-#     # X_trainf, X_testf, Y_trainf, Y_testf = train_test_split(data_store['input'],  data_store['dense'], train_size = train_size,test_size=18)
-#     train_cut, train_gtdata_cut, images_per_image = split_the_images(X_trainf, Y_trainf, in_hei, in_wid,mag)
-#     test_cut, test_gtdata_cut, images_per_image = split_the_images(X_testf, Y_testf,in_hei,in_wid,mag)
+        #Open ground-truth image.
+        img =  Image.open(file_path + n + 'dots.png').getdata()
+        data_store['gt'].append(np.array(img).reshape((hei,wid))[:,:].astype(np.float64))
 
-
-#     X_train = np.array(train_cut)
-#     Y_train = np.array(train_gtdata_cut)  
-#     X_test = np.array(test_cut)
-#     Y_test = np.array(test_gtdata_cut)
+        #Filter ground-truth image to produce density kernel representation
+        data_store['dense'].append(ndimage.filters.gaussian_filter(data_store['gt'][i],sigma,mode='constant'))
 
 
-#     #Stores history of paramaters.
-#     hist = keras.callbacks.History()
+    train = []
+    gtdata = []
+
+    shuf_train_images, shuf_test_images = return_shuffled_im(train_size,test_size,input_seq)
+
+    X_trainf = []
+    Y_trainf = []
+    X_testf = []
+    Y_testf = []
+
+    for i in shuf_train_images:
+        X_trainf.append(data_store['input'][i])
+        Y_trainf.append(data_store['dense'][i])
+    for i in shuf_test_images:
+        X_testf.append(data_store['input'][i])
+        Y_testf.append(data_store['dense'][i])
+
+    # X_trainf, X_testf, Y_trainf, Y_testf = train_test_split(data_store['input'],  data_store['dense'], train_size = train_size,test_size=18)
+    train_cut, train_gtdata_cut, images_per_image = split_the_images(X_trainf, Y_trainf, in_hei, in_wid,mag)
+    test_cut, test_gtdata_cut, images_per_image = split_the_images(X_testf, Y_testf,in_hei,in_wid,mag)
 
 
-#     # combine generators into one which yields image and masks
-#     #train_generator = zip(image_generator, mask_generator)
-#     height = X_train.shape[2]
-#     width = X_train.shape[3]
-#     model = get_unet(height, width, 1)
-
-#     X_train = np.swapaxes(X_train,1,3)
-#     X_train = np.swapaxes(X_train,2,1)
-#     Y_train = np.swapaxes(Y_train,1,3)
-#     Y_train = np.swapaxes(Y_train,2,1)
-#     X_test = np.swapaxes(X_test,1,3)
-#     X_test = np.swapaxes(X_test,2,1)
-#     Y_test = np.swapaxes(Y_test,1,3)
-#     Y_test = np.swapaxes(Y_test,2,1)
+    X_train = np.array(train_cut)
+    Y_train = np.array(train_gtdata_cut)  
+    X_test = np.array(test_cut)
+    Y_test = np.array(test_gtdata_cut)
 
 
-#     print('fitting model ', X_train.shape, np.max(X_train))
-#     checkpoint = ModelCheckpoint(filepath + ".hdf5",  monitor='loss', verbose=1, save_best_only=save_best_only, mode='min')
+    #Stores history of paramaters.
+    hist = keras.callbacks.History()
 
 
+    # combine generators into one which yields image and masks
+    #train_generator = zip(image_generator, mask_generator)
+    height = X_train.shape[2]
+    width = X_train.shape[3]
+    model = get_unet(height, width, 1)
 
-#     datagen = ImageDataGenerator(
-#         featurewise_center = False,  # set input mean to 0 over the dataset
-#         samplewise_center = False,  # set each sample mean to 0
-#         featurewise_std_normalization = False,  # divide inputs by std of the dataset
-#         samplewise_std_normalization = False,  # divide each input by its std
-#         zca_whitening = False,  # apply ZCA whitening
-#         rotation_range = 30,  # randomly rotate images in the range (degrees, 0 to 180)
-#         width_shift_range = 0.3,  # randomly shift images horizontally (fraction of total width)
-#         height_shift_range = 0.3,  # randomly shift images vertically (fraction of total height)
-#         zoom_range = 0.3,
-#         shear_range = 0.,
-#         horizontal_flip = True,  # randomly flip images
-#         vertical_flip = True,
-#         fill_mode = 'constant',
-#         dim_ordering = 'tf')  # randomly flip images
+    X_train = np.swapaxes(X_train,1,3)
+    X_train = np.swapaxes(X_train,2,1)
+    Y_train = np.swapaxes(Y_train,1,3)
+    Y_train = np.swapaxes(Y_train,2,1)
+    X_test = np.swapaxes(X_test,1,3)
+    X_test = np.swapaxes(X_test,2,1)
+    Y_test = np.swapaxes(Y_test,1,3)
+    Y_test = np.swapaxes(Y_test,2,1)
 
 
-#     change_lr = LearningRateScheduler(step_decay)
-
-#     callbacks_list = [checkpoint, change_lr]
+    print('fitting model ', X_train.shape, np.max(X_train))
+    checkpoint = ModelCheckpoint(filepath + ".hdf5",  monitor='loss', verbose=1, save_best_only=save_best_only, mode='min')
 
 
 
-#     hist = model.fit_generator(datagen.flow(X_train, Y_train, batch_size = batch_size), steps_per_epoch  = samples_per_epoch, epochs=nb_epoch, callbacks=callbacks_list, verbose=True, validation_data=(X_test, Y_test))
+    datagen = ImageDataGenerator(
+        featurewise_center = False,  # set input mean to 0 over the dataset
+        samplewise_center = False,  # set each sample mean to 0
+        featurewise_std_normalization = False,  # divide inputs by std of the dataset
+        samplewise_std_normalization = False,  # divide each input by its std
+        zca_whitening = False,  # apply ZCA whitening
+        rotation_range = 30,  # randomly rotate images in the range (degrees, 0 to 180)
+        width_shift_range = 0.3,  # randomly shift images horizontally (fraction of total width)
+        height_shift_range = 0.3,  # randomly shift images vertically (fraction of total height)
+        zoom_range = 0.3,
+        shear_range = 0.,
+        horizontal_flip = True,  # randomly flip images
+        vertical_flip = True,
+        fill_mode = 'constant',
+        dim_ordering = 'tf')  # randomly flip images
 
-#     #Store the paramters of the fit, along with the model and data preprocessing.
-#     hist.history['parameters'] = {}
-#     hist.history['parameters']['batch_size'] = batch_size
-#     hist.history['parameters']['nb_epoch'] = nb_epoch
-#     hist.history['parameters']['in_hei'] = in_hei
-#     hist.history['parameters']['in_wid'] = in_wid
-#     hist.history['parameters']['mag'] = mag
-#     hist.history['parameters']['sigma'] = sigma
-#     hist.history['parameters']['train_size'] = train_size
-#     hist.history['parameters']['learning_rate'] = learning_rate
-#     hist.history['parameters']['shuf_train_images'] = shuf_train_images
-#     hist.history['parameters']['shuf_test_images'] = shuf_test_images
-#     hist.history['parameters']['loss'] = loss
-#     hist.history['parameters']['save_best_only'] = save_best_only
-#     pickle.dump(hist.history, open(filepath + '.his', "wb"))
+
+    change_lr = LearningRateScheduler(step_decay)
+
+    callbacks_list = [checkpoint, change_lr]
+
+
+
+    hist = model.fit_generator(datagen.flow(X_train, Y_train, batch_size = batch_size), steps_per_epoch  = samples_per_epoch, epochs=nb_epoch, callbacks=callbacks_list, verbose=True, validation_data=(X_test, Y_test))
+
+    #Store the paramters of the fit, along with the model and data preprocessing.
+    hist.history['parameters'] = {}
+    hist.history['parameters']['batch_size'] = batch_size
+    hist.history['parameters']['nb_epoch'] = nb_epoch
+    hist.history['parameters']['in_hei'] = in_hei
+    hist.history['parameters']['in_wid'] = in_wid
+    hist.history['parameters']['mag'] = mag
+    hist.history['parameters']['sigma'] = sigma
+    hist.history['parameters']['train_size'] = train_size
+    hist.history['parameters']['learning_rate'] = learning_rate
+    hist.history['parameters']['shuf_train_images'] = shuf_train_images
+    hist.history['parameters']['shuf_test_images'] = shuf_test_images
+    hist.history['parameters']['loss'] = loss
+    hist.history['parameters']['save_best_only'] = save_best_only
+    pickle.dump(hist.history, open(filepath + '.his', "wb"))
 
 
 """## Making predictions"""
@@ -226,7 +226,7 @@ def return_shuffled_im(train_size, test_size, input_seq):
 model_path ='saved_models'
 experiment = 'keras_tf_exp_sdataset02s2_model_'
 
-imported_pickle = pickle.load(open(model_path + '/' + experiment + '4.his', "rb"))
+imported_pickle = pickle.load(open(model_path + '/' + experiment + '0.his', "rb"))
 
 parameters = imported_pickle['parameters']
 file_path = 'dataset02/'
@@ -279,7 +279,7 @@ Y_test = np.array(test_gtdata_cut)
 X_test = np.swapaxes(X_test, 1, 3)
 X_test = np.swapaxes(X_test, 2, 1)
 
-for vt in range(4, 5):
+for vt in range(1):
     filename = model_path + "/" + experiment + "" + str(vt) + ".hdf5"
     # load json and create model
 
