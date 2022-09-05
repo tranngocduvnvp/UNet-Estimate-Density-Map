@@ -219,162 +219,162 @@ def return_shuffled_im(train_size, test_size, input_seq):
 #     pickle.dump(hist.history, open(filepath + '.his', "wb"))
 
 
-# """## Making predictions"""
-#
-# ## Load in the paramters.
-#
-# model_path ='saved_models'
-# experiment = 'keras_tf_exp_sdataset02s2_model_'
-#
-# imported_pickle = pickle.load(open(model_path + '/' + experiment + '4.his', "rb"))
-#
-# parameters = imported_pickle['parameters']
-# file_path = 'dataset02/'
-# data_store = {}
-# data_store['input'] = []
-# data_store['gt'] = []
-# data_store['dense'] = []
-# train = []
-# gtdata = []
-# in_hei = parameters['in_hei']
-# in_wid = parameters['in_wid']
-# mag = parameters['mag']
-# learning_rate = parameters['learning_rate']
-# loss = parameters['loss']
-# save_best_only = parameters['save_best_only']
-#
-#
-# loss = 'mse'
-# sigma = parameters['sigma']
-# num_of_train = 19
-# test_size = 18
-#
-#
-# ## Load the images for testing.
-# for i in range(num_of_train):
-#     n = str(i + 80).zfill(3)
-#
-#     # Open intensity image.
-#     img = Image.open(file_path + n + 'cells.png').getdata()
-#     wid, hei = img.size
-#     temp = np.array(img).reshape((hei, wid, 3))[:, :, 2].astype(np.float32)
-#
-#     data_store['input'].append(temp)
-#
-#     # Open ground-truth image.
-#     img = Image.open(file_path + n + 'dots.png').getdata()
-#     data_store['gt'].append(np.array(img).reshape((hei, wid))[:, :].astype(np.float64))
-#
-#     # Filter ground-truth image to produce density kernel representation
-#     data_store['dense'].append(ndimage.filters.gaussian_filter(data_store['gt'][i], sigma, mode='constant'))
-#
-#
-# X_trainf, X_testf, Y_trainf, Y_testf = train_test_split(data_store['input'],  data_store['dense'], train_size =1, test_size=test_size)
-#
-# test_cut, test_gtdata_cut, images_per_image = split_the_images(X_testf, Y_testf, in_hei, in_wid, mag)
-#
-# X_test = np.array(test_cut)
-# Y_test = np.array(test_gtdata_cut)
-#
-# X_test = np.swapaxes(X_test, 1, 3)
-# X_test = np.swapaxes(X_test, 2, 1)
-#
-# for vt in range(4, 5):
-#     filename = model_path + "/" + experiment + "" + str(vt) + ".hdf5"
-#     # load json and create model
-#
-#     # load weights into new model
-#     loaded_model = load_model(filename)
-#     print("Loaded model from disk")
-#     imported_pickle = pickle.load(open(model_path + '/' + experiment + "" + str(vt) + '.his', "rb"))
-#
-#     f = open(model_path + '/' + experiment + str(vt) + 'out.txt', 'w+')
-#
-#     loss_print = imported_pickle['loss']
-#     val_loss_print = imported_pickle['val_loss']
-#     f.write('Loss_pt\t\tVal_loss_pt\n')
-#     for loss_pt, val_pt in zip(loss_print, val_loss_print):
-#         f.write(str(loss_pt) + '\t\t' + str(val_pt) + '\n')
-#     f.close()
-#
-#     # evaluate loaded model on test data
-#     # loaded_model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
-#     imgs_mask_test = loaded_model.predict(X_test, verbose=1)
-#
-#     # Switches format for tensor flow.
-#     imgs_mask_test = np.swapaxes(imgs_mask_test, 2, 1)
-#     imgs_mask_test = np.swapaxes(imgs_mask_test, 1, 3)
-#     data_store['output'] = []
-#     c = 0
-#
-#     null, f_hei, f_wid = imgs_mask_test[0].shape
-#
-#     # reconstruct the images.
-#     while c < (imgs_mask_test.__len__() - images_per_image) + 1:
-#         out = np.zeros((hei, wid))
-#         rows = 0
-#         for rst in range(0, hei, in_hei):
-#             rows += 1
-#             cols = 0
-#             d = np.floor(float(c) / float(images_per_image))
-#             for cst in range(0, wid, in_wid):
-#                 cols += 1
-#                 img = imgs_mask_test[c]
-#                 c += 1
-#                 top = bottom = left = right = 16
-#                 ren = rst + in_hei
-#                 cen = cst + in_wid
-#                 if ren > hei:
-#                     top = top + (ren-hei)
-#                     ren = hei
-#                 if cen > wid:
-#                     right = right + (cen-wid)
-#                     cen = wid
-#
-#                 out[rst:ren, cst:cen] = img[0, bottom:-top, left:-right]
-#
-#         data_store['output'].append(out)
-#
-#
-#     # Output of performance metrics
-#     pef = []
-#     trk = []
-#     abs_err = []
-#     inpu_arr = []
-#     pred_arr = []
-#     perc_arr = []
-#
-#     print('Len data store: ', data_store['output'].__len__())
-#     print('Test size: ', test_size)
-#     # figsize(12,12)
-#     for idx in range(test_size):
-#         # figure()
-#         inpu_img = Y_testf[idx]
-#         pred_img = data_store['output'][idx]
-#         n = str(idx)
-#         b = n.zfill(3)
-#
-#         pickle.dump(inpu_img, open("out_imgs/inpu_img" + b + ".p", "wb"))
-#         pickle.dump(pred_img, open("out_imgs/pred_img" + b + ".p", "wb"))
-#
-#         inpu_sum = np.sum(inpu_img) / 255.0
-#         pred_sum = np.sum(pred_img) / 255.0
-#
-#         inpu_arr.append(inpu_sum)
-#         pred_arr.append(pred_sum)
-#         abs_err.append(abs(inpu_sum-pred_sum))
-#         perc_arr.append((1-(abs(inpu_sum-pred_sum)/pred_sum))*100)
-#
-#     print('Average Abs error: ', np.average(abs_err))
-#     print('Average input arr: ', np.average(inpu_arr))
-#     print('average pred: ', np.average(pred_arr))
-#     print('average perc: ', np.average(perc_arr))
-#     imported_pickle['pred_arr'] = pred_arr
-#     imported_pickle['perc_arr'] = perc_arr
-#     imported_pickle['abs_err'] = pred_arr
-#     imported_pickle['inpu_arr'] = perc_arr
-#
-#     pickle.dump(imported_pickle, open(model_path + '/' + experiment + "" + str(vt) + '.his', "wb"))
+"""## Making predictions"""
+
+## Load in the paramters.
+
+model_path ='saved_models'
+experiment = 'keras_tf_exp_sdataset02s2_model_'
+
+imported_pickle = pickle.load(open(model_path + '/' + experiment + '4.his', "rb"))
+
+parameters = imported_pickle['parameters']
+file_path = 'dataset02/'
+data_store = {}
+data_store['input'] = []
+data_store['gt'] = []
+data_store['dense'] = []
+train = []
+gtdata = []
+in_hei = parameters['in_hei']
+in_wid = parameters['in_wid']
+mag = parameters['mag']
+learning_rate = parameters['learning_rate']
+loss = parameters['loss']
+save_best_only = parameters['save_best_only']
+
+
+loss = 'mse'
+sigma = parameters['sigma']
+num_of_train = 19
+test_size = 18
+
+
+## Load the images for testing.
+for i in range(num_of_train):
+    n = str(i + 80).zfill(3)
+
+    # Open intensity image.
+    img = Image.open(file_path + n + 'cells.png').getdata()
+    wid, hei = img.size
+    temp = np.array(img).reshape((hei, wid, 3))[:, :, 2].astype(np.float32)
+
+    data_store['input'].append(temp)
+
+    # Open ground-truth image.
+    img = Image.open(file_path + n + 'dots.png').getdata()
+    data_store['gt'].append(np.array(img).reshape((hei, wid))[:, :].astype(np.float64))
+
+    # Filter ground-truth image to produce density kernel representation
+    data_store['dense'].append(ndimage.filters.gaussian_filter(data_store['gt'][i], sigma, mode='constant'))
+
+
+X_trainf, X_testf, Y_trainf, Y_testf = train_test_split(data_store['input'],  data_store['dense'], train_size =1, test_size=test_size)
+
+test_cut, test_gtdata_cut, images_per_image = split_the_images(X_testf, Y_testf, in_hei, in_wid, mag)
+
+X_test = np.array(test_cut)
+Y_test = np.array(test_gtdata_cut)
+
+X_test = np.swapaxes(X_test, 1, 3)
+X_test = np.swapaxes(X_test, 2, 1)
+
+for vt in range(4, 5):
+    filename = model_path + "/" + experiment + "" + str(vt) + ".hdf5"
+    # load json and create model
+
+    # load weights into new model
+    loaded_model = load_model(filename)
+    print("Loaded model from disk")
+    imported_pickle = pickle.load(open(model_path + '/' + experiment + "" + str(vt) + '.his', "rb"))
+
+    f = open(model_path + '/' + experiment + str(vt) + 'out.txt', 'w+')
+
+    loss_print = imported_pickle['loss']
+    val_loss_print = imported_pickle['val_loss']
+    f.write('Loss_pt\t\tVal_loss_pt\n')
+    for loss_pt, val_pt in zip(loss_print, val_loss_print):
+        f.write(str(loss_pt) + '\t\t' + str(val_pt) + '\n')
+    f.close()
+
+    # evaluate loaded model on test data
+    # loaded_model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
+    imgs_mask_test = loaded_model.predict(X_test, verbose=1)
+
+    # Switches format for tensor flow.
+    imgs_mask_test = np.swapaxes(imgs_mask_test, 2, 1)
+    imgs_mask_test = np.swapaxes(imgs_mask_test, 1, 3)
+    data_store['output'] = []
+    c = 0
+
+    null, f_hei, f_wid = imgs_mask_test[0].shape
+
+    # reconstruct the images.
+    while c < (imgs_mask_test.__len__() - images_per_image) + 1:
+        out = np.zeros((hei, wid))
+        rows = 0
+        for rst in range(0, hei, in_hei):
+            rows += 1
+            cols = 0
+            d = np.floor(float(c) / float(images_per_image))
+            for cst in range(0, wid, in_wid):
+                cols += 1
+                img = imgs_mask_test[c]
+                c += 1
+                top = bottom = left = right = 16
+                ren = rst + in_hei
+                cen = cst + in_wid
+                if ren > hei:
+                    top = top + (ren-hei)
+                    ren = hei
+                if cen > wid:
+                    right = right + (cen-wid)
+                    cen = wid
+
+                out[rst:ren, cst:cen] = img[0, bottom:-top, left:-right]
+
+        data_store['output'].append(out)
+
+
+    # Output of performance metrics
+    pef = []
+    trk = []
+    abs_err = []
+    inpu_arr = []
+    pred_arr = []
+    perc_arr = []
+
+    print('Len data store: ', data_store['output'].__len__())
+    print('Test size: ', test_size)
+    # figsize(12,12)
+    for idx in range(test_size):
+        # figure()
+        inpu_img = Y_testf[idx]
+        pred_img = data_store['output'][idx]
+        n = str(idx)
+        b = n.zfill(3)
+
+        pickle.dump(inpu_img, open("out_imgs/inpu_img" + b + ".p", "wb"))
+        pickle.dump(pred_img, open("out_imgs/pred_img" + b + ".p", "wb"))
+
+        inpu_sum = np.sum(inpu_img) / 255.0
+        pred_sum = np.sum(pred_img) / 255.0
+
+        inpu_arr.append(inpu_sum)
+        pred_arr.append(pred_sum)
+        abs_err.append(abs(inpu_sum-pred_sum))
+        perc_arr.append((1-(abs(inpu_sum-pred_sum)/pred_sum))*100)
+
+    print('Average Abs error: ', np.average(abs_err))
+    print('Average input arr: ', np.average(inpu_arr))
+    print('average pred: ', np.average(pred_arr))
+    print('average perc: ', np.average(perc_arr))
+    imported_pickle['pred_arr'] = pred_arr
+    imported_pickle['perc_arr'] = perc_arr
+    imported_pickle['abs_err'] = pred_arr
+    imported_pickle['inpu_arr'] = perc_arr
+
+    pickle.dump(imported_pickle, open(model_path + '/' + experiment + "" + str(vt) + '.his', "wb"))
 
 
 # Visualization
