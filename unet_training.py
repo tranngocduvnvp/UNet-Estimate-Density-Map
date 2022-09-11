@@ -385,6 +385,10 @@ for img_name in [i for i in os.listdir("out_imgs") if (i.split('.')[-1] != 'jpg'
 
     pre_image = pickle.load(open(os.path.join("out_imgs", "pred" + img_name[4:]), 'rb')).astype('uint8')
     _, thresh = cv2.threshold(pre_image, 1, 255, cv2.THRESH_BINARY)
+    #====================== add ==================================================
+    kernel = np.ones((2,2),np.uint8)  #thay đổi kernel size (2,2) tùy vào kết quả.
+    thresh = cv2.erode(img,thresh,iterations = 1)
+    #====================== end ==================================================
     pre_contours, _i = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     plt.figure(figsize=(20, 10))
